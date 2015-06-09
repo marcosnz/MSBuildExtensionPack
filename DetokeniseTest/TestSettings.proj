@@ -1,0 +1,11 @@
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <!--<Import Project="C:\Program Files (x86)\MSBuild\ExtensionPack\4.0\MSBuild.ExtensionPack.tasks"/>-->
+  <UsingTask AssemblyFile="..\Solutions\Main\BuildBinaries\MSBuild.ExtensionPack.dll" TaskName="MSBuild.ExtensionPack.FileSystem.Detokenise"/>
+
+  <PropertyGroup>
+    <fileName>Foo</fileName>
+    <propertyFromSettings>Settings</propertyFromSettings>
+    <!--<BUILD_NUMBER Condition="'$(BUILD_NUMBER)' == ''">1</BUILD_NUMBER>-->
+  </PropertyGroup>
+  <Import Project="Test$(fileName).proj" />
+</Project>

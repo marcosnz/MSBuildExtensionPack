@@ -1,0 +1,12 @@
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="TestSettings.proj" />
+  <Target Name="Default">
+    <ItemGroup>
+      <copyFiles Include="Detokenise_source.xml"/>
+      <detokeniseFiles Include="Detokenise.xml"/>
+    </ItemGroup>
+    <Message Text="BUILD_NUMBER=$(BUILD_NUMBER)"/>
+    <Copy SourceFiles="@(copyFiles)" DestinationFiles="@(detokeniseFiles)" SkipUnchangedFiles="false"/>
+    <MSBuild.ExtensionPack.FileSystem.Detokenise TaskAction="Detokenise" TargetFiles="@(detokeniseFiles)"/>
+  </Target>
+</Project>

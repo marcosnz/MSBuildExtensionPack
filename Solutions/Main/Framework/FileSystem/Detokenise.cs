@@ -368,13 +368,19 @@ namespace MSBuild.ExtensionPack.FileSystem
                 if (this.project == null && (!this.collectionMode || this.SearchAllStores))
                 {
                     // Read the project file to get the tokens
+                    DumpProperties();
                     string projectFile = this.ProjectFile == null ? this.BuildEngine.ProjectFileOfTaskNode : this.ProjectFile.ItemSpec;
-                    this.LogTaskMessage(string.Format(CultureInfo.CurrentCulture, "Loading Project: {0}", projectFile));
                     this.project = ProjectCollection.GlobalProjectCollection.GetLoadedProjects(projectFile).FirstOrDefault();
                     if (this.project == null)
                     {
+                        this.LogTaskMessage("{0} projects currently loaded", new object[] { ProjectCollection.GlobalProjectCollection.Count });
+                        this.LogTaskMessage(string.Format(CultureInfo.CurrentCulture, "Loading Project: {0}", projectFile));
                         ProjectCollection.GlobalProjectCollection.LoadProject(projectFile);
                         this.project = ProjectCollection.GlobalProjectCollection.GetLoadedProjects(projectFile).FirstOrDefault();
+                    }
+                    else
+                    {
+                        this.LogTaskMessage(string.Format(CultureInfo.CurrentCulture, "Project loaded: {0}", projectFile));
                     }
                 }
 
@@ -560,6 +566,7 @@ namespace MSBuild.ExtensionPack.FileSystem
 
         private string FindReplacement(Group regexMatch)
         {
+            ////System.Diagnostics.Debugger.Launch();
             // Get the match.
             string propertyFound = regexMatch.Captures[0].ToString();
 
@@ -627,6 +634,8 @@ namespace MSBuild.ExtensionPack.FileSystem
                 if (!this.report && !this.IgnoreUnknownTokens)
                 {
                     Log.LogError(string.Format(CultureInfo.CurrentCulture, "Property not found: {0}", extractedProperty));
+                    DumpProperties();
+
                     throw new ArgumentException("Review error log");
                 }
 
@@ -644,6 +653,26 @@ namespace MSBuild.ExtensionPack.FileSystem
             }
 
             return this.report ? string.Empty : (from p in this.project.Properties where string.Equals(p.Name, extractedProperty, StringComparison.OrdinalIgnoreCase) select p.EvaluatedValue).FirstOrDefault();
+        }
+
+        private void DumpProperties()
+        {
+            if (project == null)
+            {
+                foreach (var prop in ProjectCollection.GlobalProjectCollection.GlobalProperties)
+                {
+                    System.Diagnostics.Debug.WriteLine("{0}={1}", prop.Key, prop.Value);
+                    this.LogTaskMessage("{0}={1}", new object[] { prop.Key, prop.Value });
+                }
+                System.Diagnostics.Debugger.Launch();
+            }
+            else
+            {
+                foreach (var prop in this.project.AllEvaluatedProperties.OrderBy(p => p.Name))
+                {
+                    this.LogTaskMessage("{0}={1}", new object[] { prop.Name, prop.EvaluatedValue });
+                }
+            }
         }
 
         private void UpdateTokenDictionary(string extractedProperty)
